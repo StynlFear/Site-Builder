@@ -13,14 +13,19 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
-const loginSchema = z.object({
+const registerSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string().min(6, "Please confirm your password"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 })
 
-type LoginFormData = z.infer<typeof loginSchema>
+type RegisterFormData = z.infer<typeof registerSchema>
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter()
   const { login } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
@@ -30,40 +35,39 @@ export default function LoginPage() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
   })
 
-  const onSubmit = async (data: LoginFormData) => {
+  const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true)
     setError("")
 
     try {
-      const response = await authAPI.login(data.email, data.password)
-      console.log('Login response:', response)
+      const response = await authAPI.register(data.email, data.password, data.name)
 
       // Store the JWT token and update auth context
       if (response.token) {
-        // Always create user data with the email from the form
-        const userData = {
-          id: response.user?.id || response.user?._id || 'unknown',
-          email: data.email, // Always use the email from the form
-          name: response.user?.username || response.user?.name || '' // Check for username first, then name
+        // Pass any user data from the response
+        const userData = response.user ? {
+          id: response.user.id || response.user._id || '',
+          email: response.user.email || data.email,
+          name: response.user.username || response.user.name || data.name || ''
+        } : {
+          id: '',
+          email: data.email,
+          name: data.name || ''
         }
         
-        console.log('User data being passed to login:', userData)
-        
         await login(response.token, userData)
-        // Add a small delay to ensure the cookie is set
-        setTimeout(() => {
-          window.location.href = "/dashboard"
-        }, 100)
+        // Force a page reload to ensure middleware recognizes the authentication
+        window.location.href = "/dashboard"
       }
     } catch (err: any) {
       if (err.response?.data?.message) {
         setError(err.response.data.message)
       } else {
-        setError("An error occurred during login. Please try again.")
+        setError("An error occurred during registration. Please try again.")
       }
     } finally {
       setIsLoading(false)
@@ -74,8 +78,8 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center p-4 bg-slate-50 dark:bg-slate-900">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Login</CardTitle>
-          <CardDescription>Enter your email and password to access your account</CardDescription>
+          <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
+          <CardDescription>Enter your details to create a new account</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">
@@ -84,6 +88,21 @@ export default function LoginPage() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
+            <div className="space-y-2">
+              <label htmlFor="name" className="text-sm font-medium">
+                Name
+              </label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Your full name"
+                {...register("name")}
+                disabled={isLoading}
+              />
+              {errors.name && (
+                <p className="text-sm text-red-500">{errors.name.message}</p>
+              )}
+            </div>
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">
                 Email
@@ -100,17 +119,13 @@ export default function LoginPage() {
               )}
             </div>
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label htmlFor="password" className="text-sm font-medium">
-                  Password
-                </label>
-                <Link href="#" className="text-sm text-primary hover:underline">
-                  Forgot password?
-                </Link>
-              </div>
+              <label htmlFor="password" className="text-sm font-medium">
+                Password
+              </label>
               <Input
                 id="password"
                 type="password"
+                placeholder="Choose a password"
                 {...register("password")}
                 disabled={isLoading}
               />
@@ -118,15 +133,30 @@ export default function LoginPage() {
                 <p className="text-sm text-red-500">{errors.password.message}</p>
               )}
             </div>
+            <div className="space-y-2">
+              <label htmlFor="confirmPassword" className="text-sm font-medium">
+                Confirm Password
+              </label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="Confirm your password"
+                {...register("confirmPassword")}
+                disabled={isLoading}
+              />
+              {errors.confirmPassword && (
+                <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
+              )}
+            </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Logging in..." : "Login"}
+              {isLoading ? "Creating Account..." : "Create Account"}
             </Button>
             <div className="text-center text-sm">
-              Don&apos;t have an account?{" "}
-              <Link href="/register" className="text-primary hover:underline">
-                Create one
+              Already have an account?{" "}
+              <Link href="/login" className="text-primary hover:underline">
+                Sign in
               </Link>
             </div>
           </CardFooter>
