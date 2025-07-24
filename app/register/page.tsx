@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 const registerSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
+  username: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   confirmPassword: z.string().min(6, "Please confirm your password"),
@@ -44,7 +44,7 @@ export default function RegisterPage() {
     setError("")
 
     try {
-      const response = await authAPI.register(data.email, data.password, data.name)
+      const response = await authAPI.register(data.email, data.password, data.username)
 
       // Store the JWT token and update auth context
       if (response.token) {
@@ -52,11 +52,11 @@ export default function RegisterPage() {
         const userData = response.user ? {
           id: response.user.id || response.user._id || '',
           email: response.user.email || data.email,
-          name: response.user.username || response.user.name || data.name || ''
+          username: response.user.username || data.username || ''
         } : {
           id: '',
           email: data.email,
-          name: data.name || ''
+          username: data.username || ''
         }
         
         await login(response.token, userData)
@@ -93,14 +93,14 @@ export default function RegisterPage() {
                 Name
               </label>
               <Input
-                id="name"
+                id="username"
                 type="text"
                 placeholder="Your full name"
-                {...register("name")}
+                {...register("username")}
                 disabled={isLoading}
               />
-              {errors.name && (
-                <p className="text-sm text-red-500">{errors.name.message}</p>
+              {errors.username && (
+                <p className="text-sm text-red-500">{errors.username.message}</p>
               )}
             </div>
             <div className="space-y-2">

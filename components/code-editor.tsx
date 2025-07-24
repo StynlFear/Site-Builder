@@ -1,20 +1,50 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Save } from "lucide-react"
 
-export function CodeEditor() {
+interface CodeData {
+  html: string
+  css: string
+  js: string
+}
+
+interface CodeEditorProps {
+  initialCode?: CodeData
+  onCodeChange?: (codeData: CodeData) => void
+  conversationId?: string
+}
+
+export function CodeEditor({ 
+  initialCode = { html: '', css: '', js: '' }, 
+  onCodeChange,
+  conversationId 
+}: CodeEditorProps) {
   const [html, setHtml] = useState(
-    '<div class="container">\n  <h1>Hello World</h1>\n  <p>Welcome to my website!</p>\n</div>',
+    initialCode.html || '<div class="container">\n  <h1>Hello World</h1>\n  <p>Welcome to my website!</p>\n</div>',
   )
   const [css, setCss] = useState(
-    "body {\n  font-family: Arial, sans-serif;\n  margin: 0;\n  padding: 20px;\n}\n\n.container {\n  max-width: 800px;\n  margin: 0 auto;\n}",
+    initialCode.css || "body {\n  font-family: Arial, sans-serif;\n  margin: 0;\n  padding: 20px;\n}\n\n.container {\n  max-width: 800px;\n  margin: 0 auto;\n}",
   )
   const [js, setJs] = useState(
-    'document.addEventListener("DOMContentLoaded", () => {\n  console.log("Page loaded!");\n});',
+    initialCode.js || 'document.addEventListener("DOMContentLoaded", () => {\n  console.log("Page loaded!");\n});',
   )
+
+  // Update local state when initialCode changes
+  useEffect(() => {
+    if (initialCode.html) setHtml(initialCode.html)
+    if (initialCode.css) setCss(initialCode.css)
+    if (initialCode.js) setJs(initialCode.js)
+  }, [initialCode])
+
+  const handleSave = () => {
+    const codeData = { html, css, js }
+    if (onCodeChange) {
+      onCodeChange(codeData)
+    }
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -25,9 +55,9 @@ export function CodeEditor() {
             <TabsTrigger value="css">CSS</TabsTrigger>
             <TabsTrigger value="js">JavaScript</TabsTrigger>
           </TabsList>
-          <Button size="sm">
+          <Button size="sm" onClick={handleSave}>
             <Save className="mr-2 h-4 w-4" />
-            Save and Generate
+            Save and Update
           </Button>
         </div>
 

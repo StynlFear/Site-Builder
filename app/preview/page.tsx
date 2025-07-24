@@ -39,8 +39,8 @@ export default function PreviewPage() {
                 </div>
               </div>
 
-              <div className="flex-1 p-4 overflow-auto">
-                <div className="max-w-3xl mx-auto">
+              <div className="flex-1 p-4 overflow-auto flex items-start justify-center">
+                <div className="max-w-3xl w-full pt-8">
                   <h1 className="text-2xl font-bold mb-4">Hello World</h1>
                   <p className="mb-4">Welcome to my website!</p>
                   <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">

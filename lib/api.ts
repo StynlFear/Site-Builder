@@ -45,8 +45,8 @@ export const authAPI = {
     const response = await api.post('/api/login', { email, password })
     return response.data
   },
-  register: async (email: string, password: string, name?: string) => {
-    const response = await api.post('/api/register', { email, password, name })
+  register: async (email: string, password: string, username?: string) => {
+    const response = await api.post('/api/register', { email, password, username })
     return response.data
   },
   getProfile: async () => {
@@ -62,7 +62,7 @@ export const chatAPI = {
     return response.data
   },
   createChat: async (title: string) => {
-    const response = await api.post('/api/chat', { title })
+    const response = await api.post('/api/chat/create', { title })
     return response.data
   },
   getChatById: async (chatId: string) => {
@@ -70,11 +70,46 @@ export const chatAPI = {
     return response.data
   },
   sendMessage: async (chatId: string, message: string) => {
-    const response = await api.post(`/api/chat/${chatId}/messages`, { message })
+    const response = await api.post(`/api/chat/${chatId}/message`, { 
+      sender: 'user', 
+      text: message 
+    })
+    return response.data
+  },
+  sendChatMessage: async (chatId: string, prompt: string) => {
+    const response = await api.post(`/api/chat/${chatId}/chat`, { prompt })
     return response.data
   },
   generateCode: async (chatId: string, prompt: string) => {
     const response = await api.post(`/api/chat/${chatId}/generate`, { prompt })
+    return response.data
+  },
+  getGeneratedCode: async (chatId: string, messageId: string) => {
+    const response = await api.get(`/api/chat/${chatId}/code/${messageId}`)
+    return response.data
+  },
+  updateCodeSection: async (chatId: string, codeData: { html?: string, css?: string, js?: string }) => {
+    const response = await api.put(`/api/chat/${chatId}/code`, codeData)
+    return response.data
+  },
+}
+
+// Preview API functions
+export const previewAPI = {
+  getPreview: async (conversationId: string) => {
+    const response = await api.get(`/api/preview/${conversationId}`)
+    return response.data
+  },
+  getPreviewByMessage: async (conversationId: string, messageId: string) => {
+    const response = await api.get(`/api/preview/${conversationId}/message/${messageId}`)
+    return response.data
+  },
+  getCodeHistory: async (conversationId: string) => {
+    const response = await api.get(`/api/preview/${conversationId}/history`)
+    return response.data
+  },
+  getCurrentCode: async (conversationId: string) => {
+    const response = await api.get(`/api/preview/${conversationId}/current`)
     return response.data
   },
 }

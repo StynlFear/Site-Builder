@@ -6,7 +6,7 @@ import { authUtils, authAPI } from '@/lib/api'
 interface User {
   id: string
   email: string
-  name?: string
+  username?: string
 }
 
 interface AuthContextType {
@@ -64,7 +64,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const userData = {
           id: profileData._id || profileData.id || '',
           email: profileData.email || '',
-          name: profileData.username || profileData.name || ''
+          username: profileData.username || profileData.name || ''
         }
         setUser(userData)
         localStorage.setItem('userData', JSON.stringify(userData))
@@ -88,7 +88,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setUser({
               id: decoded.userId,
               email: userData.email || '',
-              name: userData.name || ''
+              username: userData.username || ''
             })
             return
           } catch (e) {
@@ -101,7 +101,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser({
           id: decoded.userId,
           email: '',
-          name: ''
+          username: ''
         })
       }
     }

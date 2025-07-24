@@ -48,7 +48,7 @@ export default function LoginPage() {
         const userData = {
           id: response.user?.id || response.user?._id || 'unknown',
           email: data.email, // Always use the email from the form
-          name: response.user?.username || response.user?.name || '' // Check for username first, then name
+          username: response.user?.username || response.user?.name || '' // Check for username first, then name
         }
         
         console.log('User data being passed to login:', userData)
